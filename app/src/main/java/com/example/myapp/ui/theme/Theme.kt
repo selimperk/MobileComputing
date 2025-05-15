@@ -1,6 +1,5 @@
-package com.example.handson1st.ui.theme
+package com.example.myapp.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

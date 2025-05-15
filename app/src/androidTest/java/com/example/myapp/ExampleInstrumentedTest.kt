@@ -1,4 +1,4 @@
-package com.example.handson1st
+package com.example.myapp
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

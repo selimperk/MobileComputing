@@ -1,4 +1,4 @@
-package com.example.handson1st
+package com.example.myapp
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -11,7 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.handson1st.ui.theme.HandsOn1stTheme
+import com.example.myapp.ui.theme.HandsOn1stTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -1,3 +1,4 @@
+/*
 package com.example.myapp.viewmodel
 
 import androidx.lifecycle.ViewModel
@@ -15,4 +16,4 @@ class ContactViewModel: ViewModel() {
     }
 
     fun getContact(id: Int) = contactStore.getContact(id)
-}
+}*/

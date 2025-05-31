@@ -14,10 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
-import io.moxd.mocohands_on.HomeRoute
-import io.moxd.mocohands_on.AddRoute
-import io.moxd.mocohands_on.SettingsRoute
-import io.moxd.mocohands_on.Route
+
 
 @Composable
 @Preview

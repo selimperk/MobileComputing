@@ -2,17 +2,12 @@
 package com.example.myapp.ui.screens
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.example.myapp.ui.theme.HandsOn1stTheme
 
 @Composable
@@ -24,41 +19,33 @@ fun SettingsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(top = 40.dp, start = 16.dp, end = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally // ⬅️ zentriert Inhalte
     ) {
-        Icon(
-            imageVector = Icons.Default.Settings,
-            contentDescription = "Settings",
-            modifier = Modifier.size(48.dp),
-            tint = Color.Gray
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Settings",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold
-        )
-        Spacer(modifier = Modifier.height(32.dp))
+        Text("Settings", style = MaterialTheme.typography.headlineSmall)
+        Spacer(modifier = Modifier.height(20.dp))
 
-        Button(onClick = onManualSync) {
+        Button(onClick = { onManualSync() }) {
             Text("Jetzt synchronisieren")
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         Row(
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Automatisch synchronisieren alle 15 Minuten")
+            Text("Automatisch synchronisieren alle 15 Min")
             Spacer(modifier = Modifier.width(8.dp))
             Switch(
                 checked = isPeriodicSyncEnabled,
-                onCheckedChange = onPeriodicSyncToggled
+                onCheckedChange = { onPeriodicSyncToggled(it) }
             )
         }
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable

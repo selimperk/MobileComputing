@@ -3,11 +3,15 @@ package com.example.myapp.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.work.*
-
 import com.example.myapp.workers.DataSyncWorker
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import java.util.concurrent.TimeUnit
 
-class DataViewModel(app: Application) : AndroidViewModel(app) {
+@HiltViewModel
+class DataViewModel @Inject constructor(
+    app: Application
+) : AndroidViewModel(app) {
     private val workManager = WorkManager.getInstance(app)
     private val PERIODIC_DATA_SYNC_WORK_NAME = "PERIODIC_DATA_SYNC"
 

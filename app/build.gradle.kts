@@ -44,7 +44,6 @@ android {
 
 dependencies {
     implementation(libs.androidx.work.runtime.ktx)
-
     implementation(libs.androidx.hilt.work)
     implementation(libs.dagger.hilt)
     kapt(libs.dagger.hilt.compiler)

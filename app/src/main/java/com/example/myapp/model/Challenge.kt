@@ -6,5 +6,6 @@ import kotlinx.serialization.Serializable
 data class Challenge(
     val player1: String,
     val player2: String,
-    val won: Boolean
+    val status: String // "done", "failed", "open"
 )
+

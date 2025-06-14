@@ -14,7 +14,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
-import kotlinx.serialization.Serializable
+import com.example.myapp.Route.Route
+import com.example.myapp.Route.HomeRoute
+import com.example.myapp.Route.AddRoute
+import com.example.myapp.Route.SettingsRoute
 
 @Composable
 @Preview
@@ -42,9 +45,6 @@ fun OurNavigationBar(onNavigate: (route: Route) -> Unit = {}) {
     }
 }
 
-// ---------------------
-// Route & BottomBarItem
-// ---------------------
 
 sealed class BottomBarItem(
     val name: String,
@@ -63,14 +63,4 @@ data object Settings :
     BottomBarItem("Settings", SettingsRoute, Icons.Filled.Settings, Icons.Outlined.Settings)
 
 
-// Diese drei Objekte brauchst du auch in deiner MainActivity für die Navigation
-sealed class Route
 
-@Serializable
-data object HomeRoute : Route()
-
-@Serializable
-data object AddRoute : Route()
-
-@Serializable
-data object SettingsRoute : Route()

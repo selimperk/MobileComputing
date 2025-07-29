@@ -2,7 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Berechtigungen -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="true"
@@ -14,17 +16,48 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.HandsOn1st"
         tools:targetApi="31">
+
+        <!-- Hauptactivity -->
         <activity
-            android:name=".MainActivity"
+            android:name="com.example.myapp.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.HandsOn1st">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- BootReceiver: Wird nach Handy-Neustart aufgerufen -->
+        <receiver
+            android:name="com.example.myapp.util.BootReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- BatteryLowReceiver: Wenn Akku schwach ist -->
+        <receiver
+            android:name="com.example.myapp.receiver.BatteryLowReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BATTERY_LOW" />
+            </intent-filter>
+        </receiver>
+
+        <!-- AirplaneModeReceiver: Wenn Flugmodus aktiv ist -->
+        <receiver
+            android:name="com.example.myapp.receiver.AirplaneModeReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.AIRPLANE_MODE" />
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

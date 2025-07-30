@@ -19,25 +19,35 @@ class DataStore(context: Context) {
     companion object {
         val LANGUAGE_KEY = stringPreferencesKey("language")
         val USERNAME_KEY = stringPreferencesKey("user_name")
+        val EMAIL_KEY = stringPreferencesKey("email")
+        val NOTIFICATION_KEY = booleanPreferencesKey("notifications_enabled")
     }
 
-    val languageFlow: Flow<String?> = dataStore.data.map { preferences ->
-        preferences[LANGUAGE_KEY]
-    }
+    // Sprache
+    val languageFlow: Flow<String?> = dataStore.data.map { it[LANGUAGE_KEY] }
 
     suspend fun setLanguage(languageCode: String) {
-        dataStore.edit { preferences ->
-            preferences[LANGUAGE_KEY] = languageCode
-        }
+        dataStore.edit { it[LANGUAGE_KEY] = languageCode }
     }
 
-    val userNameFlow: Flow<String?> = dataStore.data.map { preferences ->
-        preferences[USERNAME_KEY]
-    }
+    // Benutzername
+    val userNameFlow: Flow<String?> = dataStore.data.map { it[USERNAME_KEY] }
 
     suspend fun setUserName(name: String) {
-        dataStore.edit { preferences ->
-            preferences[USERNAME_KEY] = name
-        }
+        dataStore.edit { it[USERNAME_KEY] = name }
+    }
+
+    // E-Mail
+    val emailFlow: Flow<String?> = dataStore.data.map { it[EMAIL_KEY] }
+
+    suspend fun setEmail(email: String) {
+        dataStore.edit { it[EMAIL_KEY] = email }
+    }
+
+    // Push-Benachrichtigungen
+    val notificationFlow: Flow<Boolean> = dataStore.data.map { it[NOTIFICATION_KEY] ?: false }
+
+    suspend fun setNotificationsEnabled(enabled: Boolean) {
+        dataStore.edit { it[NOTIFICATION_KEY] = enabled }
     }
 }

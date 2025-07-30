@@ -1,4 +1,4 @@
-package com.example.myapp
+package com.example.workmanager
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

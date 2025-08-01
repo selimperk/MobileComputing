@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "HandsOn1st"
+rootProject.name = "MoCoApp"
 include(":app")

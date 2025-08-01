@@ -1,9 +1,11 @@
 plugins {
-     alias(libs.plugins.androidApplication)
-     alias(libs.plugins.jetbrainsKotlinAndroid)
-     alias(libs.plugins.compose.compiler)
-     alias(libs.plugins.kotlin.serialization)
-     id("com.google.devtools.ksp")
+    alias(libs.plugins.androidApplication)
+    alias(libs.plugins.jetbrainsKotlinAndroid)
+    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlin.serialization)
+    id("com.google.devtools.ksp")
+    id("kotlin-kapt")
+    id("com.google.dagger.hilt.android")
  }
 
  android {
@@ -60,6 +62,8 @@ plugins {
      implementation(libs.androidx.ui.graphics)
      implementation(libs.androidx.ui.tooling.preview)
      implementation(libs.androidx.material3)
+     implementation(libs.androidx.work.runtime.ktx)
+     implementation(libs.transportation.consumer)
      testImplementation(libs.junit)
      androidTestImplementation(libs.androidx.junit)
      androidTestImplementation(libs.androidx.espresso.core)
@@ -82,4 +86,10 @@ plugins {
      implementation(libs.androidx.datastore.preferences)
      implementation(libs.androidx.datastore)
 
+     implementation("androidx.compose.material:material-icons-extended")
+
+     implementation(libs.androidx.hilt.work)
+     implementation(libs.dagger.hilt)
+     kapt(libs.dagger.hilt.compiler)
+     implementation(libs.dagger.hilt.navigation.compose)
  }

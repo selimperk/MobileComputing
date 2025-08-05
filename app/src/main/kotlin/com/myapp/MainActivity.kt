@@ -19,6 +19,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import com.myapp.ui.composables.OurNavigationBar
 import com.myapp.ui.screens.ChallengeScreen
 import com.myapp.ui.screens.HomeScreen
@@ -59,7 +67,20 @@ class MainActivity : ComponentActivity() {
             }
         } else {
             NotificationScheduler.scheduleDailyNotification(this)
+
         }
+
+                FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        val token = task.result
+                        println("FCM Token: $token")
+                        sendTokenToBackend(token)
+                    } else {
+                        println("Fetching FCM token failed: ${task.exception}")
+                    }
+                }
+
+
 
         // 🎨 UI & Navigation
         setContent {
@@ -136,6 +157,25 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
+            }
+        }
+    }
+    private fun sendTokenToBackend(token: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val client = OkHttpClient()
+                val mediaType = "text/plain".toMediaType()
+                val body = token.toRequestBody(mediaType)
+
+                val request = Request.Builder()
+                    .url("http://10.0.2.2:8080/token")  // Emulator → Backend localhost
+                    .post(body)
+                    .build()
+
+                val response = client.newCall(request).execute()
+                println("Token sent to backend, response: ${response.code}")
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }

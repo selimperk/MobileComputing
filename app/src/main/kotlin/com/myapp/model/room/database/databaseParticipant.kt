@@ -1,11 +1,11 @@
-package com.myapp.model.database
+package com.myapp.model.room.database
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.myapp.model.database.daos.ParticipantDao
-import com.myapp.model.database.entities.Participant
+import com.myapp.model.room.database.daos.ParticipantDao
+import com.myapp.model.room.database.entities.Participant
 
 @Database(version = 1, entities = [Participant::class])
 abstract class ParticipantDatabase : RoomDatabase() {

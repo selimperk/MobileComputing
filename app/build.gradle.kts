@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.google.services)
     id("com.google.devtools.ksp")
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
@@ -64,6 +65,7 @@ plugins {
      implementation(libs.androidx.material3)
      implementation(libs.androidx.work.runtime.ktx)
      implementation(libs.transportation.consumer)
+     implementation(libs.firebase.messaging)
      testImplementation(libs.junit)
      androidTestImplementation(libs.androidx.junit)
      androidTestImplementation(libs.androidx.espresso.core)
@@ -92,4 +94,8 @@ plugins {
      implementation(libs.dagger.hilt)
      kapt(libs.dagger.hilt.compiler)
      implementation(libs.dagger.hilt.navigation.compose)
+
+     //Firebase
+     implementation("com.google.firebase:firebase-messaging:25.0.0")
+     implementation("com.squareup.okhttp3:okhttp:4.12.0")
  }

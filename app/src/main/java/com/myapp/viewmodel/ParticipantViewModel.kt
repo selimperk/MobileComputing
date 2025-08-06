@@ -3,8 +3,8 @@ package com.myapp.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.myapp.model.database.ParticipantDatabase
-import com.myapp.model.database.entities.Participant
+import com.myapp.model.room.database.ParticipantDatabase
+import com.myapp.model.room.entities.Participant
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 

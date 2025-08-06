@@ -1,11 +1,11 @@
-package com.myapp.model.database.daos
+package com.myapp.model.room.daos
 
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
-import com.myapp.model.database.entities.Participant
+import com.myapp.model.room.entities.Participant
 import kotlinx.coroutines.flow.Flow
 
 @Dao

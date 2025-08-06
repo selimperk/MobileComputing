@@ -126,17 +126,17 @@ class MainActivity : ComponentActivity() {
                         }
 
                         // 🎯 Challenge Detail Screen
-                        composable<ChallengeRoute> {
-                            val data = it.toRoute<ChallengeRoute>()
-                            ChallengeScreen(
-                                player1 = data.player1,
-                                player2 = data.player2,
-                                won = data.won
-                            )
+                        //composable<ChallengeRoute> {
+                           // val data = it.toRoute<ChallengeRoute>()
+                            //ChallengeScreen(
+                               // player1 = data.player1,
+                               // player2 = data.player2,
+                               // won = data.won
+                            //)
                         }
                     }
                 }
             }
         }
     }
-}
+//}

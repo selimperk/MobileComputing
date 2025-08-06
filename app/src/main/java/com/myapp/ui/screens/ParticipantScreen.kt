@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.myapp.model.database.entities.Participant
+import com.myapp.model.room.entities.Participant
 import com.myapp.viewmodel.ParticipantViewModel
 import androidx.compose.ui.tooling.preview.Preview
 

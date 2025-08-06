@@ -92,4 +92,11 @@ plugins {
      implementation(libs.dagger.hilt)
      kapt(libs.dagger.hilt.compiler)
      implementation(libs.dagger.hilt.navigation.compose)
+
+     //Kamera
+     implementation("androidx.camera:camera-core:1.3.3")
+     implementation("androidx.camera:camera-camera2:1.3.3")
+     implementation("androidx.camera:camera-lifecycle:1.3.3")
+     implementation("androidx.camera:camera-view:1.3.3")
+
  }

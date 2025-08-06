@@ -23,14 +23,20 @@ import androidx.compose.ui.unit.sp
 import com.myapp.model.Challenge
 import com.example.handson1st.R
 
+
 @Composable
 fun HomeScreen(
-    challenges: List<Challenge>,
+    // ViewModel über Compose's viewModel() bereitstellen
+    homeViewModel: HomeViewModel = viewModel(), // <<-- GEÄNDERT: ViewModel-Parameter hinzugefügt
+    challenges: List<Challenge>, // Bleibt bestehen, wenn du Challenges direkt übergibst
     onChallengeClick: (Challenge) -> Unit,
     onNavigateToSettings: () -> Unit,
     onNavigateToParticipants: () -> Unit,
     onNavigateToHome: () -> Unit
 ) {
+    // 1. Synchronisationsstatus vom ViewModel beobachten
+    val isSyncing by homeViewModel.isSyncing.collectAsStateWithLifecycle(false) // <<-- NEU
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -40,11 +46,26 @@ fun HomeScreen(
     ) {
         // Header
         Button(
-            onClick = {},
+            onClick = {
+                // 2. Synchronisation auslösen, wenn der Button geklickt wird
+                homeViewModel.syncHomeData() // <<-- NEU: Aufruf der ViewModel-Methode
+            },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF6F1C)),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Eigener Punktestand & evtl Rangliste")
+            // 3. Optional: Ladeindikator anzeigen, wenn synchronisiert wird
+            if (isSyncing) { // <<-- NEU: Bedingte Anzeige
+                Spacer(Modifier.width(8.dp))
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = Color.White,
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Spacer(Modifier.width(8.dp))
+                Icon(Icons.Default.Refresh, contentDescription = "Refresh data", tint = Color.White) // <<-- NEU: Refresh-Icon, wenn nicht synchronisiert wird
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -159,7 +180,6 @@ fun HomeScreen(
 }
 
 
-
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
@@ -172,6 +192,7 @@ fun HomeScreenPreview() {
     )
 
     HomeScreen(
+        homeViewModel = viewModel(), // <<-- NEU: ViewModel für die Preview
         challenges = dummyChallenges,
         onChallengeClick = {},
         onNavigateToHome = {},

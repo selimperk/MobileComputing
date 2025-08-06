@@ -230,3 +230,87 @@ fun ChallengeScreenPreview() {
         onToggleDone = {}
     )
 }
+
+
+@Composable
+fun ChallengeScreen(
+    modifier: Modifier = Modifier,
+    viewModel: ChallengesViewModel = viewModel()
+) {
+    val challenges by viewModel.allChallenges.collectAsStateWithLifecycle(emptyList())
+    // Beobachte den Synchronisationsstatus aus dem ViewModel
+    val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle(false) // <--- HIER HINZUGEFÜGT
+
+    ChallengeScreenContent(
+        modifier = modifier,
+        challenges = challenges,
+        onDelete = { viewModel.deleteChallenge(it) },
+        onSave = { title, desc ->
+            viewModel.saveChallenge(title = title, description = desc)
+        },
+        onToggleDone = { challenge ->
+            viewModel.updateChallenge(challenge.copy(isDone = !challenge.isDone))
+        },
+        // Übergebe die syncChallenges Funktion als Callback für manuelle Aktualisierung
+        onRefresh = { viewModel.syncChallenges() }, // <--- HIER HINZUGEFÜGT
+        isSyncing = isSyncing // <--- HIER HINZUGEFÜGT
+    )
+}
+
+@Composable
+fun ChallengeScreenContent(
+    modifier: Modifier = Modifier,
+    challenges: List<Challenges>,
+    onDelete: (Challenges) -> Unit,
+    onSave: (String, String?) -> Unit,
+    onToggleDone: (Challenges) -> Unit,
+    onRefresh: (() -> Unit)? = null, // <--- NEUER PARAMETER
+    isSyncing: Boolean // <--- NEUER PARAMETER
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(Color(0xFF156082))
+    ) {
+        // Header mit Home-Icon und "Challenges"
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFFFF6F1C))
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(Icons.Default.Home, contentDescription = "Home", tint = Color.Black)
+            Spacer(modifier = Modifier.weight(1f))
+            Text("Challenges", color = Color.White, fontSize = 20.sp)
+
+            // Button für manuelle Synchronisation und Indikator
+            onRefresh?.let { refreshAction ->
+                // Fortschrittsanzeige, wenn synchronisiert wird
+                if (isSyncing) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp), // Größe anpassen
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    IconButton(onClick = refreshAction) {
+                        Icon(Icons.Default.Refresh, contentDescription = "Refresh data", tint = Color.White)
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Column(modifier = Modifier.padding(horizontal = 32.dp)) {
+            AddChallengeRow(onSave)
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Column(modifier = Modifier.padding(horizontal = 32.dp)) {
+            AllChallenges(challenges, onToggleDone, onDelete)
+        }
+    }
+}

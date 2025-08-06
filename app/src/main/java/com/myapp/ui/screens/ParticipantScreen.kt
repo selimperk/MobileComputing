@@ -21,12 +21,17 @@ import com.myapp.model.room.entities.Participant
 import com.myapp.viewmodel.ParticipantViewModel
 import androidx.compose.ui.tooling.preview.Preview
 
+
 @Composable
 fun ParticipantScreen(
     modifier: Modifier = Modifier,
     viewModel: ParticipantViewModel = viewModel()
 ) {
+    // 1. Beobachten des Zustands für die Liste der Teilnehmer
     val participants by viewModel.allParticipants.collectAsStateWithLifecycle(emptyList())
+
+    // 2. Beobachten des Synchronisationsstatus vom ViewModel
+    val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle(false)
 
     ParticipantScreenContent(
         modifier = modifier,
@@ -34,7 +39,10 @@ fun ParticipantScreen(
         onDelete = { viewModel.deleteParticipant(it) },
         onSave = { first, last, phone, email, birthdate ->
             viewModel.saveParticipant(first, last, phone, email, birthdate)
-        }
+        },
+        // 3. Übergebe die syncParticipants Funktion als Callback für manuelle Aktualisierung
+        onRefresh = { viewModel.syncParticipants() },
+        isSyncing = isSyncing
     )
 }
 
@@ -43,7 +51,9 @@ fun ParticipantScreenContent(
     modifier: Modifier = Modifier,
     participants: List<Participant>,
     onDelete: (Participant) -> Unit,
-    onSave: (String, String, String, String, String?) -> Unit
+    onSave: (String, String, String, String, String?) -> Unit,
+    onRefresh: (() -> Unit)? = null, // Neuer Parameter
+    isSyncing: Boolean // Neuer Parameter
 ) {
     Column(
         modifier = modifier
@@ -61,6 +71,22 @@ fun ParticipantScreenContent(
             Icon(Icons.Default.Home, contentDescription = "Home", tint = Color.Black)
             Spacer(modifier = Modifier.weight(1f))
             Text("Participants", color = Color.White, fontSize = 20.sp)
+
+            // Button für manuelle Synchronisation und Indikator
+            onRefresh?.let { refreshAction ->
+                // Fortschrittsanzeige, wenn synchronisiert wird
+                if (isSyncing) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp), // Größe anpassen
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    IconButton(onClick = refreshAction) {
+                        Icon(Icons.Default.Refresh, contentDescription = "Refresh data", tint = Color.White)
+                    }
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -228,6 +254,8 @@ fun ParticipantScreenPreview() {
             Participant(2, "Erika", "Musterfrau", "87654321", "erika@example.com", null)
         ),
         onDelete = {},
-        onSave = { _, _, _, _, _ -> }
+        onSave = { _, _, _, _, _ -> },
+        onRefresh = {}, // HIER HINZUGEFÜGT FÜR PREVIEW
+        isSyncing = false // HIER HINZUGEFÜGT FÜR PREVIEW
     )
 }

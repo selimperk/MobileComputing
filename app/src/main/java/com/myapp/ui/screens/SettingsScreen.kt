@@ -26,32 +26,79 @@ import com.myapp.model.DataStore
 import com.example.handson1st.R
 import kotlinx.coroutines.launch
 
+Absolut! Für den SettingsScreen ist die Integration der Netzwerk-Sicherheit etwas anders, da dieser Screen bereits Callback-Parameter für die Synchronisation (onManualSync, onPeriodicSyncToggled) besitzt. Wir werden diese nutzen und das ViewModel dazwischenschalten.
+
+Hier ist der komplette, aktualisierte Code für deinen SettingsScreen.kt:
+Kotlin
+
+package com.myapp.ui.screens
+
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Refresh // <<-- NEU: Import für Refresh Icon
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle // <<-- NEU: Für StateFlow Beobachtung
+import androidx.lifecycle.viewmodel.compose.viewModel // <<-- NEU: Für ViewModel Instanzierung
+import com.myapp.model.DataStore // Dein DataStore
+import com.example.handson1st.R
+import kotlinx.coroutines.launch
+import com.myapp.viewmodel.SettingsViewModel // <<-- NEU: Importiere dein SettingsViewModel
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     modifier: Modifier = Modifier,
-    onManualSync: () -> Unit = {},
-    isPeriodicSyncEnabled: Boolean = false,
-    onPeriodicSyncToggled: (Boolean) -> Unit = {}
+    // <<-- GEÄNDERT: ViewModel wird nun hier übergeben
+    settingsViewModel: SettingsViewModel = viewModel()
 ) {
     val context = LocalContext.current
+    // Der DataStore sollte idealerweise auch im ViewModel verwaltet werden,
+    // aber für diese Iteration lassen wir ihn hier, wenn er nur für diesen Screen ist.
     val dataStore = remember { DataStore(context) }
-    val scope = rememberCoroutineScope()
+    val scope = rememberCoroutineScope() // Für DataStore Operationen
 
-    val language by dataStore.languageFlow.collectAsState(initial = "")
-    val userName by dataStore.userNameFlow.collectAsState(initial = "")
-    val email by dataStore.emailFlow.collectAsState(initial = "")
-    val notificationsEnabled by dataStore.notificationFlow.collectAsState(initial = false)
-    val avatarId by dataStore.avatarIdFlow.collectAsState(initial = R.drawable.avatar1)
+    // <<-- NEÄNDERT/NEU: Beobachten der States aus dem SettingsViewModel
+    val language by settingsViewModel.languageFlow.collectAsStateWithLifecycle("")
+    val userName by settingsViewModel.userNameFlow.collectAsStateWithLifecycle("")
+    val email by settingsViewModel.emailFlow.collectAsStateWithLifecycle("")
+    val notificationsEnabled by settingsViewModel.notificationFlow.collectAsStateWithLifecycle(false)
+    val avatarId by settingsViewModel.avatarIdFlow.collectAsStateWithLifecycle(R.drawable.avatar1)
 
-    var userNameInput by remember { mutableStateOf(userName ?: "") }
-    var emailInput by remember { mutableStateOf(email ?: "") }
-    var selectedLanguage by remember { mutableStateOf(language ?: "de") }
-    var notificationsToggle by remember { mutableStateOf(notificationsEnabled) }
+    // <<-- NEU: Beobachten des Synchronisationsstatus und der Auto-Sync-Einstellung vom ViewModel
+    val isSyncing by settingsViewModel.isSyncing.collectAsStateWithLifecycle(false)
+    val isPeriodicSyncEnabled by settingsViewModel.isPeriodicSyncEnabled.collectAsStateWithLifecycle(false)
+
+
+    // Hier bleiben die lokalen States für die Eingabefelder bestehen,
+    // da sie direkt vom Benutzer bearbeitet werden und nur beim Speichern ins DataStore geschrieben werden.
+    var userNameInput by remember(userName) { mutableStateOf(userName) }
+    var emailInput by remember(email) { mutableStateOf(email) }
+    var selectedLanguage by remember(language) { mutableStateOf(language) }
+    var notificationsToggle by remember(notificationsEnabled) { mutableStateOf(notificationsEnabled) }
     var isLanguageDropdownOpen by remember { mutableStateOf(false) }
-    var selectedAvatar by remember { mutableStateOf(avatarId) }
+    var selectedAvatar by remember(avatarId) { mutableStateOf(avatarId) }
     var isAvatarDialogOpen by remember { mutableStateOf(false) }
+
 
     Column(
         modifier = modifier
@@ -69,6 +116,20 @@ fun SettingsScreen(
             Icon(Icons.Default.Home, contentDescription = "Home", tint = Color.Black)
             Spacer(modifier = Modifier.weight(1f))
             Text("Settings", color = Color.White, fontSize = 20.sp)
+
+            // <<-- NEU: Button für manuelle Synchronisation und Indikator im Header
+            // Nur anzeigen, wenn sync-Funktion im ViewModel vorhanden ist
+            if (isSyncing) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp).padding(start = 8.dp),
+                    color = Color.White,
+                    strokeWidth = 2.dp
+                )
+            } else {
+                IconButton(onClick = { settingsViewModel.syncSettingsData() }) { // <<-- HIER: Manuelle Sync aufrufen
+                    Icon(Icons.Default.Refresh, contentDescription = "Refresh data", tint = Color.White)
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -175,7 +236,11 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.weight(1f))
             Switch(
                 checked = notificationsToggle,
-                onCheckedChange = { notificationsToggle = it }
+                onCheckedChange = {
+                    notificationsToggle = it
+                    // <<-- Optional: ViewModel über Änderung informieren
+                    scope.launch { dataStore.setNotificationsEnabled(it) }
+                }
             )
         }
 
@@ -192,7 +257,10 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.weight(1f))
             Switch(
                 checked = isPeriodicSyncEnabled,
-                onCheckedChange = onPeriodicSyncToggled
+                onCheckedChange = {
+                    // <<-- HIER: Änderungen der Auto-Sync-Einstellung an ViewModel delegieren
+                    settingsViewModel.togglePeriodicSync(it)
+                }
             )
         }
 
@@ -200,12 +268,17 @@ fun SettingsScreen(
 
         // Manuelles Synchronisieren
         Button(
-            onClick = onManualSync,
+            onClick = { settingsViewModel.syncSettingsData() }, // <<-- HIER: Manuelle Sync an ViewModel delegieren
+            enabled = !isSyncing, // <<-- NEU: Button deaktivieren, wenn bereits synchronisiert wird
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
                 .padding(horizontal = 32.dp)
         ) {
-            Text("Jetzt synchronisieren")
+            Text(if (isSyncing) "Synchronisiere..." else "Jetzt synchronisieren") // <<-- NEU: Textänderung
+            if (isSyncing) { // Optional: Ladeindikator direkt im Button, wenn Button nur Text und Icon hat
+                Spacer(Modifier.width(8.dp))
+                CircularProgressIndicator(Modifier.size(20.dp), color = Color.White)
+            }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -214,11 +287,11 @@ fun SettingsScreen(
         Button(
             onClick = {
                 scope.launch {
-                    dataStore.setUserName(userNameInput)
-                    dataStore.setEmail(emailInput)
-                    dataStore.setLanguage(selectedLanguage)
-                    dataStore.setNotificationsEnabled(notificationsToggle)
-                    dataStore.setAvatarId(selectedAvatar)
+                    settingsViewModel.setUserName(userNameInput)     // <<-- GEÄNDERT: ViewModel-Methoden nutzen
+                    settingsViewModel.setEmail(emailInput)           // <<-- GEÄNDERT: ViewModel-Methoden nutzen
+                    settingsViewModel.setLanguage(selectedLanguage)  // <<-- GEÄNDERT: ViewModel-Methoden nutzen
+                    // notificationsToggle wurde schon oben gehandhabt
+                    settingsViewModel.setAvatarId(selectedAvatar)    // <<-- GEÄNDERT: ViewModel-Methoden nutzen
                 }
             },
             modifier = Modifier
@@ -267,5 +340,5 @@ fun SettingsScreen(
 @Preview
 @Composable
 fun SettingsScreenPreview() {
-    SettingsScreen()
+    SettingsScreen(settingsViewModel = viewModel()) // <<-- GEÄNDERT: ViewModel für Preview
 }

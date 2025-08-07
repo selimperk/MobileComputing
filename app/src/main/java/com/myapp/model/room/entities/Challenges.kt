@@ -20,5 +20,13 @@ data class Challenges(
     val createdAt: Long = System.currentTimeMillis(),
 
     // Bis wann läuft die Challenge? (Deadline)
-    val dueDate: Long? = null
+    val dueDate: Long? = null,
+
+    //Sensoren
+    val requiresCamera: Boolean = false,
+    val requiresMicrophone: Boolean = false,
+    val requiresMotionSensor: Boolean = false,
+    val requiresAltitudeSensor: Boolean = false
+
+
 )

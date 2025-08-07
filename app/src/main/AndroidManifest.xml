@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Internet-Permission -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <!-- Benötigte Berechtigungen -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -21,6 +24,8 @@
     Dadurch wird die App auch auf Geräten ohne Kamera installiert.
 -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <!-- Front-Kamera -->
+    <uses-feature android:name="android.hardware.camera.front" android:required="false" />
 
     <application
         android:allowBackup="true"

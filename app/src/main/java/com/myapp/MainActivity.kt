@@ -15,27 +15,27 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.myapp.Route.*
+import com.myapp.model.room.entities.Challenges
+import com.myapp.model.room.entities.Participant
 import com.myapp.ui.composables.OurNavigationBar
-import com.myapp.ui.screens.ChallengeScreen
-import com.myapp.ui.screens.HomeScreen
-import com.myapp.Route.ChallengeRoute
-import com.myapp.Route.HomeRoute
-import com.myapp.Route.ParticipantRoute
-import com.myapp.Route.SettingsRoute
-import com.myapp.model.Challenge
-import com.myapp.ui.screens.ParticipantScreen
-import com.myapp.ui.screens.SettingsScreen
+import com.myapp.ui.screens.*
 import com.myapp.ui.theme.PersistenceTheme
-import com.myapp.viewmodel.DataViewModel
 import com.myapp.util.NotificationScheduler
+import com.myapp.viewmodel.ChallengesViewModel
+import com.myapp.viewmodel.DataViewModel
+import com.myapp.viewmodel.ParticipantViewModel
 
 class MainActivity : ComponentActivity() {
 
     private val dataViewModel: DataViewModel by viewModels()
+    private val challengesViewModel: ChallengesViewModel by viewModels()
+    private val participantViewModel: ParticipantViewModel by viewModels()
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
@@ -48,7 +48,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // 🔔 Berechtigung für Notifications einholen (ab Android 13)
+        // 🔔 Benachrichtigungsberechtigung (Android 13+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
                 != PackageManager.PERMISSION_GRANTED
@@ -67,6 +67,16 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 var isPeriodicSyncEnabled by rememberSaveable { mutableStateOf(false) }
 
+                val allParticipants by participantViewModel.allParticipants.collectAsStateWithLifecycle(emptyList())
+                val allChallenges by challengesViewModel.allChallenges.collectAsStateWithLifecycle(emptyList())
+
+                // 🧠 Teilnehmer-Paare bilden (immer zwei zusammen)
+                val participantPairs = remember(allParticipants) {
+                    allParticipants.chunked(2)
+                        .filter { it.size == 2 }
+                        .map { Pair(it[0], it[1]) }
+                }
+
                 Scaffold(
                     bottomBar = {
                         OurNavigationBar { route ->
@@ -81,62 +91,81 @@ class MainActivity : ComponentActivity() {
                         startDestination = HomeRoute::class.simpleName!!,
                         modifier = Modifier.padding(padding)
                     ) {
+
+                        // 🏠 Home Screen
                         // 🏠 Home Screen
                         composable(HomeRoute::class.simpleName!!) {
+                            val allParticipants by participantViewModel.allParticipants.collectAsStateWithLifecycle(emptyList())
+
+                            val participantPairs = allParticipants
+                                .chunked(2)
+                                .filter { it.size == 2 }
+                                .map { Pair(it[0], it[1]) }
+
                             HomeScreen(
-                                challenges = listOf(
-                                    Challenge("Tim", "Jonas", false),
-                                    Challenge("Paul", "Lena", true)
-                                ),
-                                onChallengeClick = { challenge ->
-                                    navController.navigate(
-                                        ChallengeRoute(
-                                            player1 = challenge.player1,
-                                            player2 = challenge.player2,
-                                            won = challenge.won
-                                        )
-                                    )
+                                participantPairs = participantPairs,
+                                onChallengeClick = {
+                                    navController.navigate(ChallengesRoute::class.simpleName!!)
                                 },
-                                onNavigateToHome = {
-                                    navController.navigate(HomeRoute::class.simpleName!!) {
-                                        launchSingleTop = true
-                                    }
-                                },
-                                onNavigateToParticipants = {
-                                    navController.navigate(ParticipantRoute::class.simpleName!!) {
-                                        launchSingleTop = true
-                                    }
-                                },
-                                onNavigateToSettings = {
-                                    navController.navigate(SettingsRoute::class.simpleName!!) {
+                                onNavigate = { route ->
+                                    navController.navigate(route::class.simpleName!!) {
                                         launchSingleTop = true
                                     }
                                 }
                             )
                         }
 
-                        // 👤 Teilnehmer Screen
+
+                        // 👤 Teilnehmer
                         composable(ParticipantRoute::class.simpleName!!) {
-                            ParticipantScreen()
+                            ParticipantScreen(
+                                onNavigate = { route ->
+                                    navController.navigate(route::class.simpleName!!) {
+                                        launchSingleTop = true
+                                    }
+                                }
+                            )
                         }
 
                         // ⚙️ Einstellungen
                         composable(SettingsRoute::class.simpleName!!) {
-                            SettingsScreen()
+                            SettingsScreen(
+                                onManualSync = {},
+                                isPeriodicSyncEnabled = isPeriodicSyncEnabled,
+                                onPeriodicSyncToggled = { isPeriodicSyncEnabled = it },
+                                onNavigate = { route ->
+                                    navController.navigate(route::class.simpleName!!) {
+                                        launchSingleTop = true
+                                    }
+                                }
+                            )
                         }
 
-                        // 🎯 Challenge Detail Screen
-                        //composable<ChallengeRoute> {
-                           // val data = it.toRoute<ChallengeRoute>()
-                            //ChallengeScreen(
-                               // player1 = data.player1,
-                               // player2 = data.player2,
-                               // won = data.won
-                            //)
+                        // 📋 Challenge-Liste
+                        composable(ChallengesRoute::class.simpleName!!) {
+                            ChallengeScreen(
+                                onChallengeClick = { challenge: Challenges ->
+                                    navController.navigate(
+                                        ChallengeDetailRoute(
+                                            challenge.id ?: -1,
+                                            challenge.title,
+                                            challenge.description
+                                        )
+                                    )
+                                }
+                            )
+                        }
+
+                        // 🎯 Challenge-Detail
+                        composable<ChallengeDetailRoute> {
+                            val data = it.toRoute<ChallengeDetailRoute>()
+                            ChallengeDetailScreen(
+                                challenge = data.toChallenge()
+                            )
                         }
                     }
                 }
             }
         }
     }
-//}
+}

@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.myapp.model.room.database.ParticipantDatabase
 import com.myapp.model.room.entities.Participant
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
 class ParticipantViewModel(app: Application) : AndroidViewModel(app) {
@@ -41,4 +42,5 @@ class ParticipantViewModel(app: Application) : AndroidViewModel(app) {
             dao.updateParticipant(entry)
         }
     }
+
 }

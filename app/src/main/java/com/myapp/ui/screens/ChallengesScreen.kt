@@ -27,7 +27,8 @@ import androidx.compose.ui.tooling.preview.Preview
 @Composable
 fun ChallengeScreen(
     modifier: Modifier = Modifier,
-    viewModel: ChallengesViewModel = viewModel()
+    viewModel: ChallengesViewModel = viewModel(),
+    onChallengeClick: (Challenges) -> Unit = {}
 ) {
     val challenges by viewModel.allChallenges.collectAsStateWithLifecycle(emptyList())
 

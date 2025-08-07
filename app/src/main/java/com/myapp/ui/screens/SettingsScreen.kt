@@ -8,8 +8,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,8 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.myapp.model.DataStore
 import com.example.handson1st.R
+import com.myapp.Route.Route
 import kotlinx.coroutines.launch
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,7 +31,8 @@ fun SettingsScreen(
     modifier: Modifier = Modifier,
     onManualSync: () -> Unit = {},
     isPeriodicSyncEnabled: Boolean = false,
-    onPeriodicSyncToggled: (Boolean) -> Unit = {}
+    onPeriodicSyncToggled: (Boolean) -> Unit = {},
+    onNavigate: (Route) -> Unit
 ) {
     val context = LocalContext.current
     val dataStore = remember { DataStore(context) }
@@ -53,179 +52,169 @@ fun SettingsScreen(
     var selectedAvatar by remember { mutableStateOf(avatarId) }
     var isAvatarDialogOpen by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(Color(0xFF156082))
-    ) {
-        // Header
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0xFFFF6F1C))
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(Icons.Default.Home, contentDescription = "Home", tint = Color.Black)
-            Spacer(modifier = Modifier.weight(1f))
-            Text("Settings", color = Color.White, fontSize = 20.sp)
-        }
+    Scaffold(
+        containerColor = Color(0xFF156082)
+    ) { innerPadding ->
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Avatar
-        Box(
-            modifier = Modifier
-                .size(100.dp)
-                .align(Alignment.CenterHorizontally)
-                .clip(CircleShape)
-                .background(Color.Gray)
-                .clickable { isAvatarDialogOpen = true },
-            contentAlignment = Alignment.Center
-        ) {
-            Image(
-                painter = painterResource(id = selectedAvatar),
-                contentDescription = "Avatar",
-                modifier = Modifier.size(90.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Eingabefelder
         Column(
-            modifier = Modifier.padding(horizontal = 32.dp),
-            horizontalAlignment = Alignment.Start
+            modifier = modifier
+                .fillMaxSize()
+                .padding(innerPadding)
         ) {
-            Text("Benutzername", fontStyle = FontStyle.Italic, color = Color.Black)
-            TextField(
-                value = userNameInput,
-                onValueChange = { userNameInput = it },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Black,
-                    unfocusedIndicatorColor = Color.Black
-                )
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text("E-Mail", fontStyle = FontStyle.Italic, color = Color.Black)
-            TextField(
-                value = emailInput,
-                onValueChange = { emailInput = it },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Black,
-                    unfocusedIndicatorColor = Color.Black
-                )
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text("Sprache", fontStyle = FontStyle.Italic, color = Color.Black)
-            ExposedDropdownMenuBox(
-                expanded = isLanguageDropdownOpen,
-                onExpandedChange = { isLanguageDropdownOpen = !isLanguageDropdownOpen }
+            // Header ohne Home-Icon
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFFFF6F1C))
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                TextField(
-                    readOnly = true,
-                    value = selectedLanguage,
-                    onValueChange = {},
-                    modifier = Modifier.menuAnchor().fillMaxWidth(),
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isLanguageDropdownOpen) },
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent
-                    )
+                Text("Settings", color = Color.White, fontSize = 20.sp)
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Avatar
+            Box(
+                modifier = Modifier
+                    .size(100.dp)
+                    .align(Alignment.CenterHorizontally)
+                    .clip(CircleShape)
+                    .background(Color.Gray)
+                    .clickable { isAvatarDialogOpen = true },
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = selectedAvatar),
+                    contentDescription = "Avatar",
+                    modifier = Modifier.size(90.dp)
                 )
-                ExposedDropdownMenu(
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Eingabefelder
+            Column(
+                modifier = Modifier.padding(horizontal = 32.dp),
+                horizontalAlignment = Alignment.Start
+            ) {
+                Text("Benutzername", fontStyle = FontStyle.Italic, color = Color.Black)
+                TextField(
+                    value = userNameInput,
+                    onValueChange = { userNameInput = it },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = textFieldColors()
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text("E-Mail", fontStyle = FontStyle.Italic, color = Color.Black)
+                TextField(
+                    value = emailInput,
+                    onValueChange = { emailInput = it },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = textFieldColors()
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text("Sprache", fontStyle = FontStyle.Italic, color = Color.Black)
+                ExposedDropdownMenuBox(
                     expanded = isLanguageDropdownOpen,
-                    onDismissRequest = { isLanguageDropdownOpen = false }
+                    onExpandedChange = { isLanguageDropdownOpen = !isLanguageDropdownOpen }
                 ) {
-                    listOf("de", "en").forEach { lang ->
-                        DropdownMenuItem(
-                            text = { Text(lang) },
-                            onClick = {
-                                selectedLanguage = lang
-                                isLanguageDropdownOpen = false
-                            }
-                        )
+                    TextField(
+                        readOnly = true,
+                        value = selectedLanguage,
+                        onValueChange = {},
+                        modifier = Modifier.menuAnchor().fillMaxWidth(),
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isLanguageDropdownOpen) },
+                        colors = textFieldColors()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = isLanguageDropdownOpen,
+                        onDismissRequest = { isLanguageDropdownOpen = false }
+                    ) {
+                        listOf("de", "en").forEach { lang ->
+                            DropdownMenuItem(
+                                text = { Text(lang) },
+                                onClick = {
+                                    selectedLanguage = lang
+                                    isLanguageDropdownOpen = false
+                                }
+                            )
+                        }
                     }
                 }
             }
-        }
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        // Push Notifications
-        Row(
-            modifier = Modifier
-                .padding(horizontal = 32.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("Push Notifications", color = Color.White)
-            Spacer(modifier = Modifier.weight(1f))
-            Switch(
-                checked = notificationsToggle,
-                onCheckedChange = { notificationsToggle = it }
-            )
-        }
+            // Push Notifications
+            Row(
+                modifier = Modifier
+                    .padding(horizontal = 32.dp)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Push Notifications", color = Color.White)
+                Spacer(modifier = Modifier.weight(1f))
+                Switch(
+                    checked = notificationsToggle,
+                    onCheckedChange = { notificationsToggle = it }
+                )
+            }
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        // Auto Sync
-        Row(
-            modifier = Modifier
-                .padding(horizontal = 32.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("Auto-Sync alle 15 Min", color = Color.White)
-            Spacer(modifier = Modifier.weight(1f))
-            Switch(
-                checked = isPeriodicSyncEnabled,
-                onCheckedChange = onPeriodicSyncToggled
-            )
-        }
+            // Auto Sync
+            Row(
+                modifier = Modifier
+                    .padding(horizontal = 32.dp)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Auto-Sync alle 15 Min", color = Color.White)
+                Spacer(modifier = Modifier.weight(1f))
+                Switch(
+                    checked = isPeriodicSyncEnabled,
+                    onCheckedChange = onPeriodicSyncToggled
+                )
+            }
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        // Manuelles Synchronisieren
-        Button(
-            onClick = onManualSync,
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(horizontal = 32.dp)
-        ) {
-            Text("Jetzt synchronisieren")
-        }
+            // Manuelles Synchronisieren
+            Button(
+                onClick = onManualSync,
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(horizontal = 32.dp)
+            ) {
+                Text("Jetzt synchronisieren")
+            }
 
-        Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-        // Speichern
-        Button(
-            onClick = {
-                scope.launch {
-                    dataStore.setUserName(userNameInput)
-                    dataStore.setEmail(emailInput)
-                    dataStore.setLanguage(selectedLanguage)
-                    dataStore.setNotificationsEnabled(notificationsToggle)
-                    dataStore.setAvatarId(selectedAvatar)
-                }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 32.dp)
-        ) {
-            Text("Speichern")
+            // Speichern
+            Button(
+                onClick = {
+                    scope.launch {
+                        dataStore.setUserName(userNameInput)
+                        dataStore.setEmail(emailInput)
+                        dataStore.setLanguage(selectedLanguage)
+                        dataStore.setNotificationsEnabled(notificationsToggle)
+                        dataStore.setAvatarId(selectedAvatar)
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 32.dp)
+            ) {
+                Text("Speichern")
+            }
         }
     }
 
@@ -264,8 +253,16 @@ fun SettingsScreen(
     }
 }
 
+@Composable
+private fun textFieldColors() = TextFieldDefaults.colors(
+    focusedContainerColor = Color.Transparent,
+    unfocusedContainerColor = Color.Transparent,
+    focusedIndicatorColor = Color.Black,
+    unfocusedIndicatorColor = Color.Black
+)
+
 @Preview
 @Composable
 fun SettingsScreenPreview() {
-    SettingsScreen()
+    SettingsScreen(onNavigate = {})
 }

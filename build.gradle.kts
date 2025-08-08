@@ -5,4 +5,10 @@ plugins {
     alias(libs.plugins.compose.compiler) apply false
     id("com.google.devtools.ksp") version "2.1.20-2.0.1" apply false
     id("com.google.dagger.hilt.android") version "2.49" apply false
+    alias(libs.plugins.google.gms.google.services) apply false
 }
+ buildscript {
+     dependencies {
+         classpath("com.google.gms:google-services:4.4.3")
+     }
+ }

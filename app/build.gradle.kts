@@ -6,7 +6,8 @@ plugins {
     id("com.google.devtools.ksp")
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
- }
+    alias(libs.plugins.google.gms.google.services)
+}
 
  android {
      namespace = "com.example.handson1st"
@@ -71,6 +72,10 @@ plugins {
      androidTestImplementation(libs.androidx.ui.test.junit4)
      debugImplementation(libs.androidx.ui.tooling)
      debugImplementation(libs.androidx.ui.test.manifest)
+     implementation("com.google.guava:guava:31.1-android")
+
+     //Firebase
+     implementation("com.google.firebase:firebase-firestore-ktx:25.1.4")
 
      // Room
      implementation(libs.androidx.room.ktx)
@@ -85,6 +90,7 @@ plugins {
      // DataStore
      implementation(libs.androidx.datastore.preferences)
      implementation(libs.androidx.datastore)
+
 
      implementation("androidx.compose.material:material-icons-extended")
 

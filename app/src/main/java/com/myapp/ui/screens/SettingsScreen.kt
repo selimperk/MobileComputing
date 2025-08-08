@@ -24,25 +24,26 @@ import com.myapp.model.DataStore
 import com.example.handson1st.R
 import com.myapp.Route.Route
 import kotlinx.coroutines.launch
+import com.myapp.viewmodel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
+    viewModel: SettingsViewModel,
     modifier: Modifier = Modifier,
     onManualSync: () -> Unit = {},
     isPeriodicSyncEnabled: Boolean = false,
     onPeriodicSyncToggled: (Boolean) -> Unit = {},
     onNavigate: (Route) -> Unit
 ) {
-    val context = LocalContext.current
-    val dataStore = remember { DataStore(context) }
+
     val scope = rememberCoroutineScope()
 
-    val language by dataStore.languageFlow.collectAsState(initial = "")
-    val userName by dataStore.userNameFlow.collectAsState(initial = "")
-    val email by dataStore.emailFlow.collectAsState(initial = "")
-    val notificationsEnabled by dataStore.notificationFlow.collectAsState(initial = false)
-    val avatarId by dataStore.avatarIdFlow.collectAsState(initial = R.drawable.avatar1)
+    val language by viewModel.languageFlow.collectAsState(initial = "")
+    val userName by viewModel.userNameFlow.collectAsState(initial = "")
+    val email by viewModel.emailFlow.collectAsState(initial = "")
+    val notificationsEnabled by viewModel.notificationFlow.collectAsState(initial = false)
+    val avatarId by viewModel.avatarIdFlow.collectAsState(initial = R.drawable.avatar1)
 
     var userNameInput by remember { mutableStateOf(userName ?: "") }
     var emailInput by remember { mutableStateOf(email ?: "") }
@@ -198,15 +199,15 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Speichern
+            // Lokales Speichern
             Button(
                 onClick = {
                     scope.launch {
-                        dataStore.setUserName(userNameInput)
-                        dataStore.setEmail(emailInput)
-                        dataStore.setLanguage(selectedLanguage)
-                        dataStore.setNotificationsEnabled(notificationsToggle)
-                        dataStore.setAvatarId(selectedAvatar)
+                        viewModel.setUserName(userNameInput)
+                        viewModel.setEmail(emailInput)
+                        viewModel.setLanguage(selectedLanguage)
+                        viewModel.setNotificationsEnabled(notificationsToggle)
+                        viewModel.setAvatarId(selectedAvatar)
                     }
                 },
                 modifier = Modifier
@@ -215,6 +216,26 @@ fun SettingsScreen(
             ) {
                 Text("Speichern")
             }
+            // In die Cloud speichern
+            Button(
+                onClick = { viewModel.uploadSettingsToCloud() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 32.dp)
+            ) {
+                Text("In die Cloud speichern")
+            }
+
+// Aus der Cloud laden
+            Button(
+                onClick = { viewModel.downloadSettingsFromCloud() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 32.dp)
+            ) {
+                Text("Aus der Cloud laden")
+            }
+
         }
     }
 
@@ -264,5 +285,4 @@ private fun textFieldColors() = TextFieldDefaults.colors(
 @Preview
 @Composable
 fun SettingsScreenPreview() {
-    SettingsScreen(onNavigate = {})
 }

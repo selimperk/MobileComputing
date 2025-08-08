@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
@@ -29,6 +30,7 @@ import com.myapp.ui.theme.PersistenceTheme
 import com.myapp.util.NotificationScheduler
 import com.myapp.viewmodel.ChallengesViewModel
 import com.myapp.viewmodel.DataViewModel
+import com.myapp.viewmodel.SettingsViewModel
 import com.myapp.viewmodel.ParticipantViewModel
 
 class MainActivity : ComponentActivity() {
@@ -36,7 +38,7 @@ class MainActivity : ComponentActivity() {
     private val dataViewModel: DataViewModel by viewModels()
     private val challengesViewModel: ChallengesViewModel by viewModels()
     private val participantViewModel: ParticipantViewModel by viewModels()
-
+    private val settingsViewModel: SettingsViewModel by viewModels()
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (isGranted) {
@@ -130,6 +132,7 @@ class MainActivity : ComponentActivity() {
                         // ⚙️ Einstellungen
                         composable(SettingsRoute::class.simpleName!!) {
                             SettingsScreen(
+                                viewModel = settingsViewModel,
                                 onManualSync = {},
                                 isPeriodicSyncEnabled = isPeriodicSyncEnabled,
                                 onPeriodicSyncToggled = { isPeriodicSyncEnabled = it },

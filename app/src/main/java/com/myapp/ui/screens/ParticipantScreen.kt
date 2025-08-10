@@ -6,7 +6,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,86 +18,67 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.myapp.model.room.entities.Participant
 import com.myapp.viewmodel.ParticipantViewModel
+import com.myapp.Route.Route
+import com.myapp.ui.composables.OurNavigationBar
 import androidx.compose.ui.tooling.preview.Preview
-
 
 @Composable
 fun ParticipantScreen(
     modifier: Modifier = Modifier,
-    viewModel: ParticipantViewModel = viewModel()
+    viewModel: ParticipantViewModel = viewModel(),
+    onNavigate: (Route) -> Unit
 ) {
-    // 1. Beobachten des Zustands für die Liste der Teilnehmer
     val participants by viewModel.allParticipants.collectAsStateWithLifecycle(emptyList())
 
-    // 2. Beobachten des Synchronisationsstatus vom ViewModel
-    val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle(false)
-
     ParticipantScreenContent(
-        modifier = modifier,
         participants = participants,
         onDelete = { viewModel.deleteParticipant(it) },
         onSave = { first, last, phone, email, birthdate ->
             viewModel.saveParticipant(first, last, phone, email, birthdate)
         },
-        // 3. Übergebe die syncParticipants Funktion als Callback für manuelle Aktualisierung
-        onRefresh = { viewModel.syncParticipants() },
-        isSyncing = isSyncing
+        onNavigate = onNavigate
     )
 }
 
 @Composable
 fun ParticipantScreenContent(
-    modifier: Modifier = Modifier,
     participants: List<Participant>,
     onDelete: (Participant) -> Unit,
     onSave: (String, String, String, String, String?) -> Unit,
-    onRefresh: (() -> Unit)? = null, // Neuer Parameter
-    isSyncing: Boolean // Neuer Parameter
+    onNavigate: (Route) -> Unit
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(Color(0xFF156082)) // Hintergrundfarbe dunkelblau
-    ) {
-        // Header (Orange Balken mit Home-Icon)
-        Row(
+    Scaffold(
+        containerColor = Color(0xFF156082)
+    ) { innerPadding ->
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0xFFFF6F1C)) // Orange Balken
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(innerPadding)
+                .fillMaxSize()
         ) {
-            Icon(Icons.Default.Home, contentDescription = "Home", tint = Color.Black)
-            Spacer(modifier = Modifier.weight(1f))
-            Text("Participants", color = Color.White, fontSize = 20.sp)
-
-            // Button für manuelle Synchronisation und Indikator
-            onRefresh?.let { refreshAction ->
-                // Fortschrittsanzeige, wenn synchronisiert wird
-                if (isSyncing) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp), // Größe anpassen
-                        color = Color.White,
-                        strokeWidth = 2.dp
-                    )
-                } else {
-                    IconButton(onClick = refreshAction) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Refresh data", tint = Color.White)
-                    }
-                }
+            // Header
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFFFF6F1C))
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Participants", color = Color.White, fontSize = 20.sp)
             }
-        }
 
-        Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-        Column(modifier = Modifier.padding(horizontal = 32.dp)) {
-            AddParticipantRow(onSave)
-        }
+            Column(modifier = Modifier.padding(horizontal = 32.dp)) {
+                AddParticipantRow(onSave)
+            }
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        Column(modifier = Modifier.padding(horizontal = 32.dp)) {
-            AllParticipants(participants, onDelete)
+            Column(modifier = Modifier.padding(horizontal = 32.dp)) {
+                AllParticipants(participants, onDelete)
+            }
+
+            Spacer(modifier = Modifier.height(64.dp)) // Etwas Puffer über der NavBar
         }
     }
 }
@@ -112,19 +92,13 @@ fun AddParticipantRow(onSave: (String, String, String, String, String?) -> Unit)
     var birthdate by remember { mutableStateOf("") }
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        // Alle Labels italic & schwarz, wie in SettingsScreen
         Text("Vorname", fontStyle = FontStyle.Italic, color = Color.Black)
         TextField(
             value = firstName,
             onValueChange = { firstName = it },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent,
-                focusedIndicatorColor = Color.Black,
-                unfocusedIndicatorColor = Color.Black
-            )
+            colors = textFieldColors()
         )
         Text("Nachname", fontStyle = FontStyle.Italic, color = Color.Black)
         TextField(
@@ -132,12 +106,7 @@ fun AddParticipantRow(onSave: (String, String, String, String, String?) -> Unit)
             onValueChange = { lastName = it },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent,
-                focusedIndicatorColor = Color.Black,
-                unfocusedIndicatorColor = Color.Black
-            )
+            colors = textFieldColors()
         )
         Text("Telefon", fontStyle = FontStyle.Italic, color = Color.Black)
         TextField(
@@ -145,12 +114,7 @@ fun AddParticipantRow(onSave: (String, String, String, String, String?) -> Unit)
             onValueChange = { phone = it },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent,
-                focusedIndicatorColor = Color.Black,
-                unfocusedIndicatorColor = Color.Black
-            )
+            colors = textFieldColors()
         )
         Text("E-Mail", fontStyle = FontStyle.Italic, color = Color.Black)
         TextField(
@@ -158,12 +122,7 @@ fun AddParticipantRow(onSave: (String, String, String, String, String?) -> Unit)
             onValueChange = { email = it },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent,
-                focusedIndicatorColor = Color.Black,
-                unfocusedIndicatorColor = Color.Black
-            )
+            colors = textFieldColors()
         )
         Text("Geburtsdatum", fontStyle = FontStyle.Italic, color = Color.Black)
         TextField(
@@ -171,12 +130,7 @@ fun AddParticipantRow(onSave: (String, String, String, String, String?) -> Unit)
             onValueChange = { birthdate = it },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent,
-                focusedIndicatorColor = Color.Black,
-                unfocusedIndicatorColor = Color.Black
-            )
+            colors = textFieldColors()
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -245,6 +199,14 @@ fun ParticipantRow(
     }
 }
 
+@Composable
+private fun textFieldColors() = TextFieldDefaults.colors(
+    focusedContainerColor = Color.Transparent,
+    unfocusedContainerColor = Color.Transparent,
+    focusedIndicatorColor = Color.Black,
+    unfocusedIndicatorColor = Color.Black
+)
+
 @Preview
 @Composable
 fun ParticipantScreenPreview() {
@@ -255,7 +217,6 @@ fun ParticipantScreenPreview() {
         ),
         onDelete = {},
         onSave = { _, _, _, _, _ -> },
-        onRefresh = {}, // HIER HINZUGEFÜGT FÜR PREVIEW
-        isSyncing = false // HIER HINZUGEFÜGT FÜR PREVIEW
+        onNavigate = {}
     )
 }

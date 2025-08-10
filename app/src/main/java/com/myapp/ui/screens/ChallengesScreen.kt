@@ -27,7 +27,8 @@ import androidx.compose.ui.tooling.preview.Preview
 @Composable
 fun ChallengeScreen(
     modifier: Modifier = Modifier,
-    viewModel: ChallengesViewModel = viewModel()
+    viewModel: ChallengesViewModel = viewModel(),
+    onChallengeClick: (Challenges) -> Unit = {}
 ) {
     val challenges by viewModel.allChallenges.collectAsStateWithLifecycle(emptyList())
 
@@ -202,24 +203,24 @@ fun ChallengeScreenPreview() {
         challenges = listOf(
             Challenges(
                 id = 1,
-                title = "10.000 Schritte gehen",
-                description = "Jeden Tag draußen eine Runde laufen.",
+                title = "Dornseifer-Challenge",
+                //description = "Mache ein Sellfie vor dem Rewe-Dornseifer in Gummersbach.",
                 isDone = false,
                 createdAt = System.currentTimeMillis(),
                 dueDate = null
             ),
             Challenges(
                 id = 2,
-                title = "Eine Woche vegetarisch",
-                description = "7 Tage lang auf Fleisch verzichten.",
+                title = "Voice-Power",
+                //description = "Schreie so laut ins Microphone wie geht.",
                 isDone = true,
                 createdAt = System.currentTimeMillis(),
                 dueDate = null
             ),
             Challenges(
                 id = 3,
-                title = "Früh aufstehen",
-                description = "Mindestens eine Woche lang um 6:30 Uhr aus dem Bett.",
+                title = "Run, Forrest, Run!",
+                //description = "Mache 1000 Schritte am Stück",
                 isDone = false,
                 createdAt = System.currentTimeMillis(),
                 dueDate = null

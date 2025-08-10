@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "535077923852",
+    "project_id": "mocoappdatabase",
+    "storage_bucket": "mocoappdatabase.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:535077923852:android:d656df57600a62d32ed229",
+        "android_client_info": {
+          "package_name": "com.example.handson1st"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAyEAUzGsMqKWL_jT-Pf1I4hH-YyF3Iv-k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

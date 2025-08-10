@@ -10,7 +10,7 @@ class DataSyncRepository(applicationContext: Context) {
         checkIfUpToDate()
         if (!isUpToDate.value) {
             Thread.sleep(3000)
-            // Hier käme dein echter Datenabgleich mit z. B. Cloud o. DB
+            // Hier käme dein echter Datenabgleich mit z.B. Cloud o. DB
             isUpToDate.value = true
         }
     }

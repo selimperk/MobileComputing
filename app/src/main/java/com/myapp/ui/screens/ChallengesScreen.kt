@@ -1,6 +1,7 @@
 package com.myapp.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -23,7 +24,6 @@ import com.myapp.model.room.entities.Challenges
 import com.myapp.viewmodel.ChallengesViewModel
 import androidx.compose.ui.tooling.preview.Preview
 
-
 @Composable
 fun ChallengeScreen(
     modifier: Modifier = Modifier,
@@ -41,7 +41,8 @@ fun ChallengeScreen(
         },
         onToggleDone = { challenge ->
             viewModel.updateChallenge(challenge.copy(isDone = !challenge.isDone))
-        }
+        },
+        onChallengeClick = onChallengeClick // ✅ neu: nach unten durchreichen
     )
 }
 
@@ -51,36 +52,49 @@ fun ChallengeScreenContent(
     challenges: List<Challenges>,
     onDelete: (Challenges) -> Unit,
     onSave: (String, String?) -> Unit,
-    onToggleDone: (Challenges) -> Unit
+    onToggleDone: (Challenges) -> Unit,
+    onChallengeClick: (Challenges) -> Unit // ✅ neu
 ) {
-    Column(
+    LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFF156082))
+            .background(Color(0xFF156082)),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(bottom = 64.dp) // Abstand zur NavBar
     ) {
         // Header mit Home-Icon und "Challenges"
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0xFFFF6F1C))
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(Icons.Default.Home, contentDescription = "Home", tint = Color.Black)
-            Spacer(modifier = Modifier.weight(1f))
-            Text("Challenges", color = Color.White, fontSize = 20.sp)
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFFFF6F1C))
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(Icons.Default.Home, contentDescription = "Home", tint = Color.Black)
+                Spacer(modifier = Modifier.weight(1f))
+                Text("Challenges", color = Color.White, fontSize = 20.sp)
+            }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Column(modifier = Modifier.padding(horizontal = 32.dp)) {
-            AddChallengeRow(onSave)
+        // Formular
+        item {
+            Column(modifier = Modifier.padding(horizontal = 32.dp)) {
+                AddChallengeRow(onSave)
+            }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Column(modifier = Modifier.padding(horizontal = 32.dp)) {
-            AllChallenges(challenges, onToggleDone, onDelete)
+        // Challenge-Liste
+        items(
+            items = challenges,
+            key = { it.id ?: it.title.hashCode() }
+        ) { challenge ->
+            ChallengeRow(
+                challenge = challenge,
+                onToggleDone = onToggleDone,
+                onDelete = onDelete,
+                onClick = { onChallengeClick(challenge) } // ✅ neu: Tap navigiert nach außen
+            )
         }
     }
 }
@@ -147,7 +161,12 @@ fun AllChallenges(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(challenges) { challenge ->
-            ChallengeRow(challenge, onToggleDone, onDelete)
+            ChallengeRow(
+                challenge = challenge,
+                onToggleDone = onToggleDone,
+                onDelete = onDelete,
+                onClick = {} // optional
+            )
         }
     }
 }
@@ -156,12 +175,15 @@ fun AllChallenges(
 fun ChallengeRow(
     challenge: Challenges,
     onToggleDone: (Challenges) -> Unit,
-    onDelete: (Challenges) -> Unit
+    onDelete: (Challenges) -> Unit,
+    onClick: () -> Unit // ✅ neu
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
+            .clickable { onClick() } // ✅ neu: Zeile tappbar
+            .padding(8.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
@@ -204,7 +226,6 @@ fun ChallengeScreenPreview() {
             Challenges(
                 id = 1,
                 title = "Dornseifer-Challenge",
-                //description = "Mache ein Sellfie vor dem Rewe-Dornseifer in Gummersbach.",
                 isDone = false,
                 createdAt = System.currentTimeMillis(),
                 dueDate = null
@@ -212,7 +233,6 @@ fun ChallengeScreenPreview() {
             Challenges(
                 id = 2,
                 title = "Voice-Power",
-                //description = "Schreie so laut ins Microphone wie geht.",
                 isDone = true,
                 createdAt = System.currentTimeMillis(),
                 dueDate = null
@@ -220,7 +240,6 @@ fun ChallengeScreenPreview() {
             Challenges(
                 id = 3,
                 title = "Run, Forrest, Run!",
-                //description = "Mache 1000 Schritte am Stück",
                 isDone = false,
                 createdAt = System.currentTimeMillis(),
                 dueDate = null
@@ -228,6 +247,7 @@ fun ChallengeScreenPreview() {
         ),
         onDelete = {},
         onSave = { _, _ -> },
-        onToggleDone = {}
+        onToggleDone = {},
+        onChallengeClick = {} // ✅ neu
     )
 }

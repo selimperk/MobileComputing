@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -14,17 +15,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.myapp.model.DataStore
 import com.example.handson1st.R
 import com.myapp.Route.Route
-import kotlinx.coroutines.launch
 import com.myapp.viewmodel.SettingsViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,7 +35,6 @@ fun SettingsScreen(
     onPeriodicSyncToggled: (Boolean) -> Unit = {},
     onNavigate: (Route) -> Unit
 ) {
-
     val scope = rememberCoroutineScope()
 
     val language by viewModel.languageFlow.collectAsState(initial = "")
@@ -57,185 +55,216 @@ fun SettingsScreen(
         containerColor = Color(0xFF156082)
     ) { innerPadding ->
 
-        Column(
+        LazyColumn(
             modifier = modifier
                 .fillMaxSize()
-                .padding(innerPadding)
+                .padding(innerPadding),
+            contentPadding = PaddingValues(bottom = 24.dp)
         ) {
-            // Header ohne Home-Icon
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFFFF6F1C))
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("Settings", color = Color.White, fontSize = 20.sp)
-            }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            // Header
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFFFF6F1C))
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Settings", color = Color.White, fontSize = 20.sp)
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+            }
 
             // Avatar
-            Box(
-                modifier = Modifier
-                    .size(100.dp)
-                    .align(Alignment.CenterHorizontally)
-                    .clip(CircleShape)
-                    .background(Color.Gray)
-                    .clickable { isAvatarDialogOpen = true },
-                contentAlignment = Alignment.Center
-            ) {
-                Image(
-                    painter = painterResource(id = selectedAvatar),
-                    contentDescription = "Avatar",
-                    modifier = Modifier.size(90.dp)
-                )
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(100.dp)
+                            .clip(CircleShape)
+                            .background(Color.Gray)
+                            .clickable { isAvatarDialogOpen = true },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = selectedAvatar),
+                            contentDescription = "Avatar",
+                            modifier = Modifier.size(90.dp)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
             // Eingabefelder
-            Column(
-                modifier = Modifier.padding(horizontal = 32.dp),
-                horizontalAlignment = Alignment.Start
-            ) {
-                Text("Benutzername", fontStyle = FontStyle.Italic, color = Color.Black)
-                TextField(
-                    value = userNameInput,
-                    onValueChange = { userNameInput = it },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = textFieldColors()
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text("E-Mail", fontStyle = FontStyle.Italic, color = Color.Black)
-                TextField(
-                    value = emailInput,
-                    onValueChange = { emailInput = it },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = textFieldColors()
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text("Sprache", fontStyle = FontStyle.Italic, color = Color.Black)
-                ExposedDropdownMenuBox(
-                    expanded = isLanguageDropdownOpen,
-                    onExpandedChange = { isLanguageDropdownOpen = !isLanguageDropdownOpen }
+            item {
+                Column(
+                    modifier = Modifier.padding(horizontal = 32.dp),
+                    horizontalAlignment = Alignment.Start
                 ) {
+                    Text("Benutzername", fontStyle = FontStyle.Italic, color = Color.Black)
                     TextField(
-                        readOnly = true,
-                        value = selectedLanguage,
-                        onValueChange = {},
-                        modifier = Modifier.menuAnchor().fillMaxWidth(),
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isLanguageDropdownOpen) },
+                        value = userNameInput,
+                        onValueChange = { userNameInput = it },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
                         colors = textFieldColors()
                     )
-                    ExposedDropdownMenu(
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text("E-Mail", fontStyle = FontStyle.Italic, color = Color.Black)
+                    TextField(
+                        value = emailInput,
+                        onValueChange = { emailInput = it },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = textFieldColors()
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text("Sprache", fontStyle = FontStyle.Italic, color = Color.Black)
+                    ExposedDropdownMenuBox(
                         expanded = isLanguageDropdownOpen,
-                        onDismissRequest = { isLanguageDropdownOpen = false }
+                        onExpandedChange = { isLanguageDropdownOpen = !isLanguageDropdownOpen }
                     ) {
-                        listOf("de", "en").forEach { lang ->
-                            DropdownMenuItem(
-                                text = { Text(lang) },
-                                onClick = {
-                                    selectedLanguage = lang
-                                    isLanguageDropdownOpen = false
-                                }
-                            )
+                        TextField(
+                            readOnly = true,
+                            value = selectedLanguage,
+                            onValueChange = {},
+                            modifier = Modifier
+                                .menuAnchor()
+                                .fillMaxWidth(),
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(
+                                    expanded = isLanguageDropdownOpen
+                                )
+                            },
+                            colors = textFieldColors()
+                        )
+                        ExposedDropdownMenu(
+                            expanded = isLanguageDropdownOpen,
+                            onDismissRequest = { isLanguageDropdownOpen = false }
+                        ) {
+                            listOf("de", "en").forEach { lang ->
+                                DropdownMenuItem(
+                                    text = { Text(lang) },
+                                    onClick = {
+                                        selectedLanguage = lang
+                                        isLanguageDropdownOpen = false
+                                    }
+                                )
+                            }
                         }
                     }
                 }
+                Spacer(modifier = Modifier.height(16.dp))
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
 
             // Push Notifications
-            Row(
-                modifier = Modifier
-                    .padding(horizontal = 32.dp)
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("Push Notifications", color = Color.White)
-                Spacer(modifier = Modifier.weight(1f))
-                Switch(
-                    checked = notificationsToggle,
-                    onCheckedChange = { notificationsToggle = it }
-                )
+            item {
+                Row(
+                    modifier = Modifier
+                        .padding(horizontal = 32.dp)
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Push Notifications", color = Color.White)
+                    Spacer(modifier = Modifier.weight(1f))
+                    Switch(
+                        checked = notificationsToggle,
+                        onCheckedChange = { notificationsToggle = it }
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
 
             // Auto Sync
-            Row(
-                modifier = Modifier
-                    .padding(horizontal = 32.dp)
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("Auto-Sync alle 15 Min", color = Color.White)
-                Spacer(modifier = Modifier.weight(1f))
-                Switch(
-                    checked = isPeriodicSyncEnabled,
-                    onCheckedChange = onPeriodicSyncToggled
-                )
+            item {
+                Row(
+                    modifier = Modifier
+                        .padding(horizontal = 32.dp)
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Auto-Sync alle 15 Min", color = Color.White)
+                    Spacer(modifier = Modifier.weight(1f))
+                    Switch(
+                        checked = isPeriodicSyncEnabled,
+                        onCheckedChange = onPeriodicSyncToggled
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
 
             // Manuelles Synchronisieren
-            Button(
-                onClick = onManualSync,
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(horizontal = 32.dp)
-            ) {
-                Text("Jetzt synchronisieren")
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Button(
+                        onClick = onManualSync,
+                        modifier = Modifier.padding(horizontal = 32.dp)
+                    ) {
+                        Text("Jetzt synchronisieren")
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
 
             // Lokales Speichern
-            Button(
-                onClick = {
-                    scope.launch {
-                        viewModel.setUserName(userNameInput)
-                        viewModel.setEmail(emailInput)
-                        viewModel.setLanguage(selectedLanguage)
-                        viewModel.setNotificationsEnabled(notificationsToggle)
-                        viewModel.setAvatarId(selectedAvatar)
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 32.dp)
-            ) {
-                Text("Speichern")
+            item {
+                Button(
+                    onClick = {
+                        scope.launch {
+                            viewModel.setUserName(userNameInput)
+                            viewModel.setEmail(emailInput)
+                            viewModel.setLanguage(selectedLanguage)
+                            viewModel.setNotificationsEnabled(notificationsToggle)
+                            viewModel.setAvatarId(selectedAvatar)
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 32.dp)
+                ) {
+                    Text("Speichern")
+                }
+                Spacer(modifier = Modifier.height(12.dp))
             }
+
             // In die Cloud speichern
-            Button(
-                onClick = { viewModel.uploadSettingsToCloud() },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 32.dp)
-            ) {
-                Text("In die Cloud speichern")
+            item {
+                Button(
+                    onClick = { viewModel.uploadSettingsToCloud() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 32.dp)
+                ) {
+                    Text("In die Cloud speichern")
+                }
+                Spacer(modifier = Modifier.height(12.dp))
             }
 
-// Aus der Cloud laden
-            Button(
-                onClick = { viewModel.downloadSettingsFromCloud() },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 32.dp)
-            ) {
-                Text("Aus der Cloud laden")
+            // Aus der Cloud laden
+            item {
+                Button(
+                    onClick = { viewModel.downloadSettingsFromCloud() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 32.dp)
+                ) {
+                    Text("Aus der Cloud laden")
+                }
             }
-
         }
     }
 
@@ -285,4 +314,5 @@ private fun textFieldColors() = TextFieldDefaults.colors(
 @Preview
 @Composable
 fun SettingsScreenPreview() {
+    // Preview leer gelassen, da echtes ViewModel benötigt wird
 }

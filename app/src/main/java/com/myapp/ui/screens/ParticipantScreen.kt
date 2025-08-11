@@ -50,38 +50,44 @@ fun ParticipantScreenContent(
     Scaffold(
         containerColor = Color(0xFF156082)
     ) { innerPadding ->
-        Column(
+        LazyColumn( // <-- Scrollbare Liste für alles
             modifier = Modifier
                 .padding(innerPadding)
-                .fillMaxSize()
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(bottom = 64.dp) // Puffer für NavBar
         ) {
             // Header
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFFFF6F1C))
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("Participants", color = Color.White, fontSize = 20.sp)
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFFFF6F1C))
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Participants", color = Color.White, fontSize = 20.sp)
+                }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Column(modifier = Modifier.padding(horizontal = 32.dp)) {
-                AddParticipantRow(onSave)
+            // Eingabeformular
+            item {
+                Column(modifier = Modifier.padding(horizontal = 32.dp)) {
+                    AddParticipantRow(onSave)
+                }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Column(modifier = Modifier.padding(horizontal = 32.dp)) {
-                AllParticipants(participants, onDelete)
+            // Alle Teilnehmer
+            items(participants) { participant ->
+                ParticipantRow(
+                    participant = participant,
+                    onDelete = onDelete
+                )
             }
-
-            Spacer(modifier = Modifier.height(64.dp)) // Etwas Puffer über der NavBar
         }
     }
 }
+
 
 @Composable
 fun AddParticipantRow(onSave: (String, String, String, String, String?) -> Unit) {

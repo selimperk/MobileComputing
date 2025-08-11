@@ -8,6 +8,8 @@
     <!-- Benötigte Berechtigungen -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+
 
     <!-- Sensor-Funktionen -->
     <uses-permission android:name="android.permission.CAMERA" />

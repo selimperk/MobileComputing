@@ -48,7 +48,7 @@ fun HomeScreen(
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF6F1C)),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Eigener Punktestand & evtl Rangliste")
+                Text("Home")
             }
 
             Spacer(modifier = Modifier.height(16.dp))

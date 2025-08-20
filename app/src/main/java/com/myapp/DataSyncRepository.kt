@@ -19,3 +19,4 @@ class DataSyncRepository(applicationContext: Context) {
         // Dummy-Logik, du kannst das später erweitern
     }
 }
+

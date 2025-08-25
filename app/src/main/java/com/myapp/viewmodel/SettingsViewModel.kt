@@ -1,15 +1,17 @@
 package com.myapp.viewmodel
 
-
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.myapp.model.DataStore
 import com.myapp.model.firebase.SettingsFbRepository
 import com.myapp.model.firebase.Settingsfb
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
 class SettingsViewModel(app: Application) : AndroidViewModel(app) {
@@ -25,64 +27,75 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
     val notificationFlow: Flow<Boolean> = dataStore.notificationFlow
     val avatarIdFlow: Flow<Int> = dataStore.avatarIdFlow
 
-    //Dummy-UserId (später von Firebase Auth holen)
+    // Dummy-UserId (später von Firebase Auth holen)
     private val userId = "testuser"
 
+    // UI-Events (z. B. für Snackbar)
+    private val _events = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    val events = _events.asSharedFlow()
+
     // ─────────────────────────────────────
-    // Set-Methoden zum Speichern
+    // Set-Methoden zum lokalen Speichern
     fun setLanguage(languageCode: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            dataStore.setLanguage(languageCode)
-        }
+        viewModelScope.launch(Dispatchers.IO) { dataStore.setLanguage(languageCode) }
     }
 
     fun setUserName(name: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            dataStore.setUserName(name)
-        }
+        viewModelScope.launch(Dispatchers.IO) { dataStore.setUserName(name) }
     }
 
     fun setEmail(email: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            dataStore.setEmail(email)
-        }
+        viewModelScope.launch(Dispatchers.IO) { dataStore.setEmail(email) }
     }
 
     fun setNotificationsEnabled(enabled: Boolean) {
-        viewModelScope.launch(Dispatchers.IO) {
-            dataStore.setNotificationsEnabled(enabled)
-        }
+        viewModelScope.launch(Dispatchers.IO) { dataStore.setNotificationsEnabled(enabled) }
     }
 
     fun setAvatarId(id: Int) {
+        viewModelScope.launch(Dispatchers.IO) { dataStore.setAvatarId(id) }
+    }
+
+    // ─────────────────────────────────────
+    // Cloud: Flows hochladen (nutzt aktuell gespeicherte Werte aus DataStore)
+    fun uploadSettingsToCloud() {
         viewModelScope.launch(Dispatchers.IO) {
-            dataStore.setAvatarId(id)
+            try {
+                val profile = Settingsfb(
+                    userName = userNameFlow.firstOrNull().orEmpty(),
+                    email = emailFlow.firstOrNull().orEmpty(),
+                    language = languageFlow.firstOrNull().orEmpty(),
+                    notificationsEnabled = notificationFlow.first(),
+                    avatarId = avatarIdFlow.firstOrNull() ?: 0
+                )
+                repo.saveSettings(userId, profile)
+                _events.tryEmit("Einstellungen in die Cloud gespeichert ✅")
+            } catch (t: Throwable) {
+                _events.tryEmit("Fehler beim Speichern: ${t.message ?: "Unbekannt"}")
+            }
         }
     }
 
-    fun uploadSettingsToCloud() {
-        viewModelScope.launch(Dispatchers.IO) {
-            val profile = Settingsfb(
-                userName = userNameFlow.first() ?: "",
-                email = emailFlow.first() ?: "",
-                language = languageFlow.first() ?: "",
-                notificationsEnabled = notificationFlow.first(),
-                avatarId = 0 // Passe ggf. an!
-            )
-            repo.saveSettings(userId, profile)
-        }
-    }
 
     fun downloadSettingsFromCloud() {
         viewModelScope.launch(Dispatchers.IO) {
-            val loaded = repo.loadSettings(userId)
-            loaded?.let {
-                dataStore.setUserName(it.userName)
-                dataStore.setEmail(it.email)
-                dataStore.setLanguage(it.language)
-                dataStore.setNotificationsEnabled(it.notificationsEnabled)
-                // Optional: dataStore.setAvatarId(it.avatarId)
+            try {
+                val loaded = repo.loadSettings(userId)
+                if (loaded != null) {
+                    dataStore.setUserName(loaded.userName)
+                    dataStore.setEmail(loaded.email)
+                    dataStore.setLanguage(loaded.language)
+                    dataStore.setNotificationsEnabled(loaded.notificationsEnabled)
+                    dataStore.setAvatarId(loaded.avatarId)
+                    _events.tryEmit("Einstellungen aus der Cloud geladen ✅")
+                } else {
+                    _events.tryEmit("Keine Cloud-Daten gefunden")
+                }
+            } catch (t: Throwable) {
+                _events.tryEmit("Fehler beim Laden: ${t.message ?: "Unbekannt"}")
             }
         }
     }
 }
+
+

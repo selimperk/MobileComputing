@@ -37,6 +37,13 @@ fun SettingsScreen(
 ) {
     val scope = rememberCoroutineScope()
 
+    val snackbarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { msg ->
+            snackbarHostState.showSnackbar(msg)
+        }
+    }
+
     val language by viewModel.languageFlow.collectAsState(initial = "")
     val userName by viewModel.userNameFlow.collectAsState(initial = "")
     val email by viewModel.emailFlow.collectAsState(initial = "")
@@ -52,7 +59,8 @@ fun SettingsScreen(
     var isAvatarDialogOpen by remember { mutableStateOf(false) }
 
     Scaffold(
-        containerColor = Color(0xFF156082)
+        containerColor = Color(0xFF156082),
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
 
         LazyColumn(
@@ -244,7 +252,9 @@ fun SettingsScreen(
             // In die Cloud speichern
             item {
                 Button(
-                    onClick = { viewModel.uploadSettingsToCloud() },
+                    onClick = {
+                        scope.launch { snackbarHostState.showSnackbar("Upload-Button geklickt") }
+                        viewModel.uploadSettingsToCloud() },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 32.dp)

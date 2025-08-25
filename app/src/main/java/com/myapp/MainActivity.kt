@@ -133,7 +133,10 @@ class MainActivity : ComponentActivity() {
                         composable(SettingsRoute::class.simpleName!!) {
                             SettingsScreen(
                                 viewModel = settingsViewModel,
-                                onManualSync = {},
+                                onManualSync = {
+                                    //liest die aktuellen Werte aus dem DataStore und lädt in Cloud hoch
+                                    settingsViewModel.uploadSettingsToCloud()
+                                },
                                 isPeriodicSyncEnabled = isPeriodicSyncEnabled,
                                 onPeriodicSyncToggled = { isPeriodicSyncEnabled = it },
                                 onNavigate = { route ->
